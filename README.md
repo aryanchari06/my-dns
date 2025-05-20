@@ -78,7 +78,7 @@ Configure Your System to Use the DNS Server
 You can temporarily set your system’s DNS server to 127.0.0.1 (localhost) to route DNS queries to your custom DNS server for testing purposes.
 
 # Dependencies
-Node.js
-dns-packet
-Native Node.js dgram module for UDP sockets
-node-cache for in-memory caching
+- Node.js
+- dns-packet
+- Native Node.js dgram module for UDP sockets
+- node-cache for in-memory caching
