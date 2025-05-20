@@ -1,11 +1,13 @@
 const dgram = require("node:dgram");
 const dnsPacket = require("dns-packet");
+const NodeCache = require("node-cache");
 
 const DEF_PORT = 53;
 const ROOT_IP = "198.41.0.4";
 const LOCAL_IP = "127.0.0.1";
 
 async function init() {
+  const cached = new NodeCache({ stdTTL: 300 });
   const server = dgram.createSocket("udp4");
   let origMsg;
   let origClient;
@@ -47,14 +49,35 @@ async function init() {
               origClient = remoteInfo;
               origMsg = incomingMsg;
 
-              const queryToRootServer = dnsPacket.encode({
-                id: incomingMsg.id,
-                type: "query",
-                flags: dnsPacket.RECURSION_DESIRED,
-                questions: incomingMsg.questions,
-              });
+              const cachedData = cached.get(incomingMsg.questions[0].name);
 
-              server.send(queryToRootServer, DEF_PORT, ROOT_IP);
+              if (cachedData) {
+                // console.log("From cache: ", cachedData);
+                const cachedResponse = dnsPacket.encode({
+                  id: incomingMsg.id,
+                  type: "response",
+                  flags: dnsPacket.AUTHORITATIVE_ANSWER,
+                  questions: incomingMsg.questions,
+                  answers: cachedData,
+                });
+
+                server.send(
+                  cachedResponse,
+                  remoteInfo.port,
+                  remoteInfo.address
+                );
+                // console.log("sent from cache");
+                return;
+              } else {
+                const queryToRootServer = dnsPacket.encode({
+                  id: incomingMsg.id,
+                  type: "query",
+                  flags: dnsPacket.RECURSION_DESIRED,
+                  questions: incomingMsg.questions,
+                });
+
+                server.send(queryToRootServer, DEF_PORT, ROOT_IP);
+              }
             }
           }
         }
@@ -115,6 +138,14 @@ async function init() {
               questions: origMsg.questions,
               answers: incomingMsg.answers,
             });
+
+            const isCachedAlready = cached.has(origMsg.questions[0].name);
+            // console.log('isCached: ', isCachedAlready)
+            if (!isCachedAlready) {
+              const domainName = origMsg.questions[0].name;
+              const domainData = incomingMsg.answers;
+              cached.set(domainName, domainData);
+            }
 
             if (incomingMsg.answers[0].type === "A") {
               server.send(finalResponse, origClient.port, origClient.address);
