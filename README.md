@@ -82,3 +82,6 @@ You can temporarily set your system’s DNS server to 127.0.0.1 (localhost) to r
 - dns-packet
 - Native Node.js dgram module for UDP sockets
 - node-cache for in-memory caching
+
+# Docker 
+```docker pull aryanchari/my-dns:latest```
