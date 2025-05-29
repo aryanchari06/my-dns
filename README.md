@@ -2,7 +2,6 @@
 
 A custom recursive DNS resolver built from scratch using Node.js, leveraging the `dgram` and `dns-packet` modules. This DNS server handles recursive queries by querying root and authoritative DNS servers step-by-step, supports caching for faster responses, and properly parses DNS authority and additional sections.
 
----
 
 ## Features
 
@@ -24,7 +23,6 @@ A custom recursive DNS resolver built from scratch using Node.js, leveraging the
 - **Pending query management:**  
   Tracks outstanding recursive queries to correctly route responses back to the original clients.
 
----
 
 ## How It Works
 
@@ -39,7 +37,6 @@ A custom recursive DNS resolver built from scratch using Node.js, leveraging the
 4. Caches the response along with TTL information.
 5. Sends the answer back to the client.
 
----
 
 ## Installation
 
